@@ -1,6 +1,5 @@
 from IPython import get_ipython
 from IPython.display import display
-!pip install ydata-profiling
 from ydata_profiling import ProfileReport
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -28,7 +27,7 @@ df = df.drop(columns=['_id', 'No'])
 df.info()
 df.isnull().sum()
 
-# 📌 แปลงวันที่ และสร้าง Feature ใหม่
+#แปลงวันที่ และสร้าง Feature ใหม่
 df["Date"] = pd.to_datetime(df["Date"], errors="coerce")
 df['Day'] = df['Date'].dt.day
 df['Month'] = df['Date'].dt.month

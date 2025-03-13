@@ -16,6 +16,7 @@ import Typography from '@mui/material/Typography';
 import DeviceHubIcon from '@mui/icons-material/DeviceHub';
 import RepostSVR from '../page/RepostSVR';
 import RepostNN from '../page/RepostNN';
+import Reportgraph from '../page/Reportgraph';
 
 const NAVIGATION = [
   {
@@ -61,9 +62,9 @@ const NAVIGATION = [
     ],
   },
   {
-    segment: 'integrations',
-    pathname: '/integrations',
-    title: 'Integrations',
+    segment: 'graph',
+    pathname: '/graph',
+    title: 'Report graph',
     icon: <LayersIcon />,
   },
 ];
@@ -174,6 +175,9 @@ export default function HomePageLayout(props) {
   ) : router.pathname === '/reports/NNReport' ? (
 
     <RepostSVR />
+  ) : router.pathname === '/graph' ? (
+    <Reportgraph />
+
   ) : (
     <Grid container spacing={1} />
   )}
