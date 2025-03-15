@@ -1,17 +1,28 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException 
 from pydantic import BaseModel
 import joblib
 import pandas as pd
 import numpy as np
+from fastapi.middleware.cors import CORSMiddleware  # ✅ ใช้ของ FastAPI แทน Flask
 from typing import Optional
 
 app = FastAPI()
 
-# Load models
+# ✅ เพิ่ม CORS Middleware ที่ถูกต้อง
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # อนุญาตทุกโดเมน
+    allow_credentials=True,
+    allow_methods=["*"],  # อนุญาตทุก HTTP Method
+    allow_headers=["*"],  # อนุญาตทุก Header
+)
+
+# โหลดโมเดล
 svr_model = joblib.load("./Machine/SVR/svr_model.pkl")
 scaler = joblib.load("./Machine/SVR/scaler.pkl")
 poly = joblib.load("./Machine/SVR/poly.pkl")
 
+# โหลดข้อมูลจราจร
 data = pd.read_csv('./data/updated_traffic_data.csv')
 
 FEATURES = ['Day', 'Month', 'Year', 'Weekday', 'is_weekend', 'Day_of_Year', 
@@ -30,11 +41,12 @@ class TrafficInput(BaseModel):
 @app.post("/api/traffic/bkk")
 def predict_traffic(data: TrafficInput):
     input_dict = data.dict()
+
     try:
         input_dict["Date"] = pd.to_datetime(input_dict["Date"], errors="coerce")
     except Exception:
         raise HTTPException(status_code=400, detail="Invalid date format")
-    
+
     if pd.isnull(input_dict["Date"]):
         raise HTTPException(status_code=400, detail="Invalid date format")
 
@@ -47,13 +59,19 @@ def predict_traffic(data: TrafficInput):
         "Day_of_Year": input_dict["Date"].dayofyear
     })
 
-    input_dict["Total_Vol_Calculated"] = input_dict["Total_Vol_Calculated"] or data["Total_Vol_Calculated"].median()
-    input_dict["Total_Vol_Lag1"] = input_dict["Total_Vol_Lag1"] or data["Total_Vol_Lag1"].median()
-    input_dict["Total_Vol_Lag7"] = input_dict["Total_Vol_Lag7"] or data["Total_Vol_Lag7"].median()
-    
     del input_dict["Date"]
-    input_df = pd.DataFrame([input_dict]).fillna(0)
+
+    if input_dict["Total_Vol_Calculated"] is None:
+        input_dict["Total_Vol_Calculated"] = data["Total_Vol_Calculated"].mean()
     
+    if input_dict["Total_Vol_Lag1"] is None:
+        input_dict["Total_Vol_Lag1"] = data["Total_Vol_Lag1"].mean()
+    
+    if input_dict["Total_Vol_Lag7"] is None:
+        input_dict["Total_Vol_Lag7"] = data["Total_Vol_Lag7"].mean()
+    
+    input_df = pd.DataFrame([input_dict]).fillna(0)
+
     try:
         input_poly = poly.transform(input_df[FEATURES])
         input_scaled = scaler.transform(input_poly)
@@ -62,10 +80,12 @@ def predict_traffic(data: TrafficInput):
         raise HTTPException(status_code=500, detail=f"Error in prediction: {str(e)}")
     
     predicted_traffic = prediction[0]
-    traffic_severity = "Low Traffic" if predicted_traffic < 10000 else "Moderate Traffic" if predicted_traffic < 20000 else "High Traffic"
-    historical_avg = data["Total_Vol_Calculated"].mean()
-    traffic_trend = "normal" if abs(predicted_traffic - historical_avg) < 0.1 * historical_avg else "higher than usual" if predicted_traffic > historical_avg else "lower than usual"
     
+    traffic_severity = "Low Traffic" if predicted_traffic < 10000 else "Moderate Traffic" if predicted_traffic < 20000 else "High Traffic"
+
+    historical_avg = 15000
+    traffic_trend = "normal" if abs(predicted_traffic - historical_avg) < 0.1 * historical_avg else "higher than usual" if predicted_traffic > historical_avg else "lower than usual"
+
     return {
         "Total_Vol_Predicted": predicted_traffic,
         "Traffic_Severity": traffic_severity,
@@ -73,46 +93,3 @@ def predict_traffic(data: TrafficInput):
         "Model_Used": "SVR (Support Vector Regression)"
     }
 
-class HospitalInput(BaseModel):
-    Distance: float
-    Population: int
-    Hospital_Code: int
-    Bed_Count: int
-    Patient_Count: int
-    Service_Count: int
-
-hospital_model = joblib.load("./Machine/Neural_Network/hospital_bed_model0-1.pkl")
-hospital_scaler = joblib.load("./Machine/Neural_Network/scaler0-1.pkl")
-
-
-@app.post("/api/hospital")
-def predict_hospital(data: HospitalInput):
-    input_dict = data.dict()
-    input_df = pd.DataFrame([input_dict])
-
-    # ใช้เฉพาะคอลัมน์ที่จำเป็น
-    expected_columns = ['Bed_Count', 'Patient_Count', 'Service_Count', 'Population', 'Distance', 'Hospital_Code']
-    input_df = input_df.reindex(columns=expected_columns)
-
-    try:
-        # แปลงข้อมูลด้วย scaler
-        input_scaled = hospital_scaler.transform(input_df)
-
-        # ทำนายจำนวนผู้ป่วยในล่วงหน้า 2, 4, และ 6 ปี
-        predictions = {
-            f"Patient_Count_Prediction_{years}_years": int(round(hospital_model.predict(input_scaled + years)[0])) 
-            for years in [2, 4, 6]
-        }
-        
-        h = hospital_model.predict(input_scaled)
-         
-
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error in prediction: {str(e)}")
-
-    return {
-        "Predictions": predictions,
-        "Input_Data": input_dict,
-         "Hospital_Bed_Prediction": h.tolist(),
-        "Model_Used": "Neural Network"
-    }

@@ -34,7 +34,7 @@ const NAVIGATION = [
   {
     segment: 'SVR',
     pathname: '/SVR',
-    title: 'Support Vector Regression',
+    title: 'Bangkok Traffic Model (SVR)',
     icon: <TwoWheelerIcon />,
   },
   {

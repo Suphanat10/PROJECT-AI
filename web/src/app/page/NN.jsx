@@ -131,30 +131,25 @@ const NNForm = () => {
           {/* Province Dropdown */}
           <Grid item xs={12} sm={6}>
             <FormControl fullWidth>
-              <InputLabel>จังหวัดที่คาดการ</InputLabel>
+              <InputLabel>จังหวัด</InputLabel>
               <Select
                 value={inputs.Province}
                 onChange={handleChange}
                 label="Province"
                 name="Province"
               >
-                <MenuItem value="">Select Province</MenuItem>
-                <MenuItem value="Ontario">Ontario</MenuItem>
-                <MenuItem value="Quebec">Quebec</MenuItem>
-                <MenuItem value="British Columbia">British Columbia</MenuItem>
-                <MenuItem value="Alberta">Alberta</MenuItem>
-                <MenuItem value="Manitoba">Manitoba</MenuItem>
-                <MenuItem value="Saskatchewan">Saskatchewan</MenuItem>
-                <MenuItem value="Nova Scotia">Nova Scotia</MenuItem>
-                <MenuItem value="New Brunswick">New Brunswick</MenuItem>
-                <MenuItem value="Newfoundland and Labrador">Newfoundland and Labrador</MenuItem>
-                <MenuItem value="Prince Edward Island">Prince Edward Island</MenuItem>
-                <MenuItem value="Northwest Territories">Northwest Territories</MenuItem>
+                <MenuItem value="">เลือกจังหวัด</MenuItem>
+                <MenuItem value="0">กรุงเทพมหานคร</MenuItem>
+                <MenuItem value="1">เชียงใหม่</MenuItem>
+                <MenuItem value="3">ขอนเเก่น</MenuItem>
+                <MenuItem value="4">ภูเก็ต</MenuItem>
+                <MenuItem value="2">หาดใหญ่</MenuItem>
+             
               </Select>
             </FormControl>
           </Grid>
 
-          {/* Submit Button */}
+        
           <Grid item xs={12}>
             <Button variant="contained" type="submit"  sx={12}    style={{backgroundColor: '#7cb342', color: 'white'}}>
               คาดการณ์คุณภาพอากาศ 
