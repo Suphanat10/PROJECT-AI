@@ -5,7 +5,7 @@ import AccordionDetails from '@mui/material/AccordionDetails';
 import AccordionSummary from '@mui/material/AccordionSummary';
 import Typography from '@mui/material/Typography';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import { colors } from '@mui/material';
+import { colors, Link } from '@mui/material';
 import Card from '@mui/material/Card';
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
@@ -18,7 +18,7 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 import Button from '@mui/material/Button';
-import Grid from '@mui/material/Grid';
+
 
 
 const RepostNN = () => {
@@ -113,12 +113,7 @@ epsilon: ควบคุมความคลาดเคลื่อนที�
           </Typography>
         </AccordionDetails>
       </Accordion>
-     {/* <Accordion expanded={expanded === 'panel4'} onChange={handleChange('panel4')}>
-        
-        <AccordionDetails>
-          
-        </AccordionDetails>
-      </Accordion> */}
+     
 
       <Typography variant="h5" sx={{ marginBottom: 2 , marginTop: 2 }}>
       การทดสอบและการประเมินผล (Model Evaluation)
@@ -150,9 +145,22 @@ epsilon: ควบคุมความคลาดเคลื่อนที�
 MSE  : 2964455.36
 RMSE : 1721.76
 R²   : 0.99 */}
-<Typography variant="h5" sx={{ marginBottom: 2 , marginTop: 2 }}>
+<Typography variant="h5" sx={{ marginBottom: 2 , marginTop: 2 }}  component="div">
        ตัวอย่างชุดข้อมูลที่ใช้ในกพัฒนาโมเดล (Dataset)
       </Typography>
+      <Typography variant="body2" sx={{ marginBottom: 2 }}>
+              ตัวอย่างชุดข้อมูลที่ใช้ในกพัฒนาโมเดลได้มาจามากการ เว็บไซต์ open data  <Link href="https://data.bangkok.go.th/" target="_blank"> กรุงเทพมหานคร </Link>
+              เเละสร้างโดย ChatGPT โดยมีรายละเอียดดังนี้ <br />
+              ชุดข้อมูลประกอบด้วย 7 คอลัมน์ ได้แก่ <br />
+              1. วันที่ (Date) <br />
+              2. สะพาน (Crossroads) <br />
+              3. ถนน (Road) <br />
+              4. อุณหภูมิ (Temperature) <br />
+              5. ปริมาณน้ำฝน (Rainfall) <br />
+              6. วันหยุด (Holiday)  <br />
+              7. ปริมาณการจราจร (Total_Vol) <br />
+
+          </Typography>
       
   
             <Button variant="contained" type="submit"      style={{backgroundColor: '#7cb342', color: 'white' , marginBottom: 2 , marginTop: 2}}>
