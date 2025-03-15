@@ -1,14 +1,16 @@
-from fastapi import FastAPI, HTTPException 
+from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 import joblib
+import torch  # Make sure this import is included at the top of your file
+import torch.nn as nn
 import pandas as pd
 import numpy as np
-from fastapi.middleware.cors import CORSMiddleware  # ✅ ใช้ของ FastAPI แทน Flask
+from fastapi.middleware.cors import CORSMiddleware
 from typing import Optional
 
 app = FastAPI()
 
-# ✅ เพิ่ม CORS Middleware ที่ถูกต้อง
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],  # อนุญาตทุกโดเมน
@@ -17,12 +19,12 @@ app.add_middleware(
     allow_headers=["*"],  # อนุญาตทุก Header
 )
 
-# โหลดโมเดล
+
 svr_model = joblib.load("./Machine/SVR/svr_model.pkl")
 scaler = joblib.load("./Machine/SVR/scaler.pkl")
 poly = joblib.load("./Machine/SVR/poly.pkl")
 
-# โหลดข้อมูลจราจร
+
 data = pd.read_csv('./data/updated_traffic_data.csv')
 
 FEATURES = ['Day', 'Month', 'Year', 'Weekday', 'is_weekend', 'Day_of_Year', 
@@ -92,4 +94,89 @@ def predict_traffic(data: TrafficInput):
         "Traffic_Trend": traffic_trend,
         "Model_Used": "SVR (Support Vector Regression)"
     }
+    
+    
 
+
+
+class RegressionModel(nn.Module):
+    def __init__(self, input_dim):
+        super(RegressionModel, self).__init__()
+        self.fc = nn.Linear(input_dim, 1)  # สมมติว่าเป็นโมเดล Linear
+
+    def forward(self, x):
+        return self.fc(x)
+
+class ClassificationModel(nn.Module):
+    def __init__(self, input_dim, num_classes):
+        super(ClassificationModel, self).__init__()
+        self.fc = nn.Linear(input_dim, num_classes)  # สมมติว่าเป็นโมเดล Linear
+
+    def forward(self, x):
+        return self.fc(x)
+
+input_dim = 8  # จำนวนฟีเจอร์
+num_classes = 5  # จำนวนคลาสของการจัดหมวดหมู่ (เปลี่ยนตามโมเดลจริง)
+
+# สร้างโมเดลใหม่
+regression_model = RegressionModel(input_dim)
+classification_model = ClassificationModel(input_dim, num_classes)
+
+# โหลด state_dict ของโมเดล
+regression_model.load_state_dict(torch.load("./Machine/Neural_Network/regression_model.pth"), strict=False)
+
+classification_model.load_state_dict(torch.load("./Machine/Neural_Network/classification_model.pth"), strict=False)
+
+# ตั้งให้โมเดลเป็นโหมดประเมินผล
+regression_model.eval()
+classification_model.eval()
+
+# โหลด MinMaxScaler ที่ใช้ Normalize ข้อมูล
+scaler1 = joblib.load("./Machine/Neural_Network/scaler.pkl")
+
+# กำหนดโครงสร้างข้อมูลที่รับจาก API
+class InputData(BaseModel):
+    PM10: float
+    CO: float
+    NO2: float
+    O3: float
+    SO2: float
+    Temperature: float
+    Humidity: float
+    Province: int
+
+@app.post("/api/airquality")
+def predict_air_quality(data: InputData):
+    input_array = np.array([[data.PM10, data.CO, data.NO2, data.O3, data.SO2, data.Temperature, data.Humidity, data.Province]])
+    
+    # Normalize ข้อมูล
+    input_scaled = scaler1.transform(input_array)
+
+    # แปลงเป็น Tensor
+    X_input_tensor = torch.tensor(input_scaled, dtype=torch.float32)
+
+    # ทำนายค่า PM2.5 ด้วย Regression Model
+    with torch.no_grad():
+        y_reg_pred = regression_model(X_input_tensor)
+        pm25_pred = y_reg_pred.cpu().numpy()[0][0]
+
+    # ทำนายหมวดหมู่คุณภาพอากาศด้วย Classification Model
+    with torch.no_grad():
+        y_cls_pred = classification_model(X_input_tensor)
+        y_cls_pred_label = torch.argmax(y_cls_pred, dim=1).cpu().numpy()[0]
+        
+    
+    if int(y_cls_pred_label) == 0:
+        y_cls_pred_label = "Good"
+    elif int(y_cls_pred_label) == 1:
+        y_cls_pred_label = "Moderate"
+    elif int(y_cls_pred_label) == 2:
+        y_cls_pred_label = "Unhealthy for Sensitive Groups"
+            
+
+    # ส่งคืนผลลัพธ์
+    return {
+        "Predicted_PM2_5": round(float(pm25_pred), 4),
+        "Air_Quality_Category": y_cls_pred_label,
+         "Model_Used": "Neural Network (Regression & Classification)"
+    }

@@ -1,6 +1,15 @@
 import React, { useState } from 'react';
 import { TextField, Button, Grid, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
 import Typography from '@mui/material/Typography';
+import Snackbar from "@mui/material/Snackbar";
+import Card from "@mui/material/Card";
+import Box from "@mui/material/Box";
+import Stack from "@mui/material/Stack";
+import Backdrop from "@mui/material/Backdrop";
+import CircularProgress from "@mui/material/CircularProgress";
+import Divider from "@mui/material/Divider";
+import { colors } from "@mui/material";
+
 
 const NNForm = () => {
   const [inputs, setInputs] = useState({
@@ -11,8 +20,17 @@ const NNForm = () => {
     SO2: '',
     Temperature: '',
     Humidity: '',
-    Province: '', // Default empty value for Province
+    Province: '', 
   });
+
+  const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [open , setOpen] = useState(false);
+    const [predictionResult, setPredictionResult] = useState([]);
+  
+    const handleClose = () => {
+      setOpenSnackbar(false);
+    };
+  
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -22,18 +40,70 @@ const NNForm = () => {
     }));
   };
 
+  const ClearData = () => {
+    setInputs({
+      PM10: '',
+      CO: '',
+      NO2: '',
+      O3: '',
+      SO2: '',
+      Temperature: '',
+      Humidity: '',
+      Province: '',
+    });
+  };
+
+
   const handleSubmit = (event) => {
     event.preventDefault();
-    // Process the form submission
-    console.log('Form Submitted with values:', inputs);
+    console.log(inputs);  
+      
+    if(!inputs.PM10 || !inputs.CO || !inputs.NO2 || !inputs.O3 || !inputs.SO2 || !inputs.Temperature || !inputs.Humidity || !inputs.Province) {
+      setOpenSnackbar(true);
+      return;
+    }
+
+    setOpen(true);
+    const dataForAPI = {
+      PM10: inputs.PM10,
+      CO: inputs.CO,
+      NO2: inputs.NO2,
+      O3: inputs.O3,
+      SO2: inputs.SO2,
+      Temperature: inputs.Temperature,
+      Humidity: inputs.Humidity,
+      Province: inputs.Province,
+    };
+
+
+    fetch("http://localhost:3000/api/airquality", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(dataForAPI),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        setPredictionResult(data);
+        setOpen(false);
+      })
+      .catch((error) => {
+        setOpen(false);
+        console.error("Error:", error);
+      });
+
+    ClearData();
+
   };
 
  
-
   return (
     <div>
      <Typography variant="body2" sx={{ marginBottom: 2 }}>
-         โมเดลการเรียนรู้ของเครื่อง (Machine Learning) ที่ใช้ในการคาดการณ์คุณภาพอากาศ จะใช้ข้อมูลเชิงตัวเลขเช่น ค่าฝุ่น PM10, คาร์บอนมอนอกไซด์ (CO), ไนโตรเจนไดออกไซด์ (NO2), โอโซน (O3), ก๊าซซัลเฟอร์ไดออกไซด์ (SO2), อุณหภูมิ และความชื้น เพื่อคาดการณ์คุณภาพอากาศในจังหวัดต่างๆของแคนาดา
+        โมเดลการทำนายคุณภาพอากาศ (Air Quality )
+         โดยใช้ Neural Network สำหรับการพยากรณ์ค่าตัวเลข (PM2.5) และการจำแนกประเภทคุณภาพอากาศ (Good, Moderate, Unhealthy)
+
       </Typography>
       <form onSubmit={handleSubmit}>
         <Grid container spacing={2}>
@@ -156,9 +226,63 @@ const NNForm = () => {
             </Button>
           </Grid>
         </Grid>
+           <Snackbar
+                  open={openSnackbar}
+                  autoHideDuration={3000}
+                  onClose={handleClose}
+                  anchorOrigin={{ vertical: "top", horizontal: "right" }} // ย้ายไปขวาบน
+                  message={
+                    <Typography sx={{ color: "white" }}>
+                      ⚠ กรุณากรอกข้อมูลให้ครบถ้วน
+                    </Typography>
+                  }
+                  sx={{
+                    "& .MuiSnackbarContent-root": {
+                      backgroundColor: "#f44336",
+                      color: "white",
+                      fontSize: "16px",
+                    },
+                  }}
+                />
 
-       
+                   <Backdrop
+                          sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
+                          open={open}
+                          handleClose={handleClose}
+                        >
+                          <CircularProgress color="inherit" />
+                        </Backdrop>
+
       </form>
+       {predictionResult?.Predicted_PM2_5 !== undefined && (
+              <div>
+                <Typography variant="h5" sx={{ marginTop: 2, marginBottom: 2 }}>
+                  ผลการทำนาย
+                </Typography>
+      
+                <Card variant="outlined" sx={{ maxWidth: 360 }}>
+                  <Box sx={{ p: 2 }}>
+                    <Typography variant="body2">
+                      ผลการทำนายคุณภาพอากาศ 
+                    </Typography>
+      
+                    <Typography variant="body1">
+                      ค่า PM2.5 ที่คาดการณ์:{" "}
+                      <strong style={{ color: colors.red[600] }}>
+                        {predictionResult.Predicted_PM2_5} µg/m³
+                      </strong>{" "}
+                      <br />
+                      ระดับคุณภาพอากาศ:{" "}
+                      <strong style={{ color: colors.green[700] }}>
+                       {(predictionResult.Air_Quality_Category)} 
+                      </strong>{" "}
+                      <br />
+                    </Typography>
+                  </Box>
+                  <Divider />
+                </Card>
+              </div>
+            )}
     </div>
   );
 };

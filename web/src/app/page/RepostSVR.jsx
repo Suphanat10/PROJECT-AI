@@ -265,18 +265,16 @@ const RepostSVR = () => {
         10. Province: จังหวัดที่ทำการวัดค่าของตัวแปรต่าง ๆ
       </Typography>
 
-      <Button
-        variant="contained"
-        type="submit"
-        style={{
-          backgroundColor: "#7cb342",
-          color: "white",
-          marginBottom: 2,
-          marginTop: 2,
-        }}
+      <Button 
+        variant="contained" 
+        type="submit"      
+        style={{backgroundColor: '#7cb342', color: 'white', marginBottom: 2, marginTop: 2}} 
+        href="https://drive.google.com/file/d/1ofkLUpauGxHcSvurlCKK6KPPAjJNm04y/view?usp=drive_link"   
+        target="_blank"          
       >
         ดาวน์โหลดชุดข้อมูล
       </Button>
+
       <TableContainer component={Paper} xs={{ marginTop: 2 }}>
         <Table sx={{ minWidth: 650 }} aria-label="simple table">
           <TableHead>

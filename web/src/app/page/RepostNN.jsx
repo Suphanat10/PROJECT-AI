@@ -141,10 +141,6 @@ epsilon: ควบคุมความคลาดเคลื่อนที�
   <Divider />
 </Card>
 
-{/* MAE  : 686.68
-MSE  : 2964455.36
-RMSE : 1721.76
-R²   : 0.99 */}
 <Typography variant="h5" sx={{ marginBottom: 2 , marginTop: 2 }}  component="div">
        ตัวอย่างชุดข้อมูลที่ใช้ในกพัฒนาโมเดล (Dataset)
       </Typography>
@@ -163,9 +159,16 @@ R²   : 0.99 */}
           </Typography>
       
   
-            <Button variant="contained" type="submit"      style={{backgroundColor: '#7cb342', color: 'white' , marginBottom: 2 , marginTop: 2}}>
-               ดาวน์โหลดชุดข้อมูล
-            </Button>
+          <Button 
+  variant="contained" 
+  type="submit"      
+  style={{backgroundColor: '#7cb342', color: 'white', marginBottom: 2, marginTop: 2}} 
+  href="https://drive.google.com/file/d/1gNuV1NHAb-e029UBo4iUgVqta5dl6U0Q/view?usp=sharing"   
+  target="_blank"          
+>
+  ดาวน์โหลดชุดข้อมูล
+</Button>
+
 
       <TableContainer component={Paper}>
       <Table sx={{ minWidth: 650 }} aria-label="simple table">

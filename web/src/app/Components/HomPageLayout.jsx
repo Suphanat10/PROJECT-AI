@@ -40,7 +40,7 @@ const NAVIGATION = [
   {
     segment: 'NN',
     pathname: '/NN',
-    title: 'Neural Network',
+    title: 'Air Quality Model (Neural Network)',
     icon: <AirIcon />,
   },
   {
