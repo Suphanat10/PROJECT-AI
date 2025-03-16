@@ -855,7 +855,7 @@ function SVRContent() {
       Total_Vol_Lag7: Total_Vol_Lag7,
     };
 
-    fetch("http://localhost:3000/api/traffic/bkk", {
+    fetch("http://13.236.44.252:3000/api/traffic/bkk", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

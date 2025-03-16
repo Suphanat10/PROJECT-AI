@@ -76,7 +76,7 @@ const NNForm = () => {
     };
 
 
-    fetch("http://localhost:3000/api/airquality", {
+    fetch("http://13.236.44.252:3000/api/airquality", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
