@@ -39,8 +39,13 @@
 5. **AWS EC2** (สำหรับการ Deploy โมเดล)
 
 ## วิธีการใช้งาน
-1. Clone repository นี้
-2. ติดตั้ง dependencies ที่จำเป็น:
-   ```bash
-   pip install -r requirements.txt
+
+### ขั้นตอนที่ 1: Clone Repository
+เริ่มต้นด้วยการ clone repository นี้ไปยังเครื่องของคุณ
+
+```bash
+git clone https://github.com/Suphanat10/PROJECT-AI.git
+cd project
+
+
 
