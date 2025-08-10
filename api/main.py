@@ -43,7 +43,7 @@ class TrafficInput(BaseModel):
 
 @app.post("/api/traffic/bkk")
 def predict_traffic(data: TrafficInput):
-    input_dict = data.dict()
+    input_dict = data.model_dump()
 
     try:
         input_dict["Date"] = pd.to_datetime(input_dict["Date"], errors="coerce")
@@ -53,25 +53,36 @@ def predict_traffic(data: TrafficInput):
     if pd.isnull(input_dict["Date"]):
         raise HTTPException(status_code=400, detail="Invalid date format")
 
+    # ตรวจสอบช่วงค่า Temperature (อนุญาตแค่ -50 ถึง 60)
+    if input_dict["Temperature"] < -50 or input_dict["Temperature"] > 60:
+        raise HTTPException(status_code=400, detail="Temperature must be between -50 and 60 °C")        
+
+    try:
+        weekday = input_dict["Date"].weekday()
+        is_weekend_flag = 1 if weekday >= 5 else 0
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Date processing error: {str(e)}")
+
     input_dict.update({
         "Day": input_dict["Date"].day,
         "Month": input_dict["Date"].month,
         "Year": input_dict["Date"].year,
-        "Weekday": input_dict["Date"].weekday(),
-        "is_weekend": 1 if input_dict["Date"].weekday() >= 5 else 0,
+        "Weekday": weekday,
+        "is_weekend": is_weekend_flag,
         "Day_of_Year": input_dict["Date"].dayofyear
     })
 
     del input_dict["Date"]
 
+    # เติมค่า default จากค่าเฉลี่ยใน historical_data หากค่าใดเป็น None
     if input_dict["Total_Vol_Calculated"] is None:
-        input_dict["Total_Vol_Calculated"] = data["Total_Vol_Calculated"].mean()
+        input_dict["Total_Vol_Calculated"] = historical_data["Total_Vol_Calculated"].mean()
     
     if input_dict["Total_Vol_Lag1"] is None:
-        input_dict["Total_Vol_Lag1"] = data["Total_Vol_Lag1"].mean()
+        input_dict["Total_Vol_Lag1"] = historical_data["Total_Vol_Lag1"].mean()
     
     if input_dict["Total_Vol_Lag7"] is None:
-        input_dict["Total_Vol_Lag7"] = data["Total_Vol_Lag7"].mean()
+        input_dict["Total_Vol_Lag7"] = historical_data["Total_Vol_Lag7"].mean()
     
     input_df = pd.DataFrame([input_dict]).fillna(0)
 
