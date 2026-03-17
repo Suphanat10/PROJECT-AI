@@ -38,14 +38,9 @@
 4. **React Vite + Material UI** (สำหรับการพัฒนา Frontend)
 5. **AWS EC2** (สำหรับการ Deploy โมเดล)
 
-## วิธีการใช้งาน
+งคุณ
 
-### ขั้นตอนที่ 1: Clone Repository
-เริ่มต้นด้วยการ clone repository นี้ไปยังเครื่องของคุณ
 
-```bash
-git clone https://github.com/Suphanat10/PROJECT-AI.git
-cd project
 
 
 
