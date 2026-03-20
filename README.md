@@ -38,7 +38,6 @@
 4. **React Vite + Material UI** (สำหรับการพัฒนา Frontend)
 5. **AWS EC2** (สำหรับการ Deploy โมเดล)
 
-งคุณ
 
 
 
